@@ -1,0 +1,29 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.pdb
+*.ldf
+*.mdf
+*.development.json
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Rider
+.idea/
+*.sln.iml
+
+# JetBrains Cache
+_ReSharper.Caches/
