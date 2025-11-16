@@ -10,6 +10,7 @@ using PersonaWatch.Infrastructure.Providers.Media;
 using PersonaWatch.Infrastructure.Providers.Reports;
 using PersonaWatch.Infrastructure.Providers.Scanners;
 using PersonaWatch.Infrastructure.Providers.Scanners.Apify;
+using PersonaWatch.Infrastructure.Providers.UserProfiles;
 using PersonaWatch.Infrastructure.Security;
 
 namespace PersonaWatch.Infrastructure;
@@ -30,6 +31,9 @@ public static class DependencyInjection
         services.AddHttpClient();
         services.AddHttpClient<ApifyClient>();
         services.AddHttpClient<EksiScannerService>();
+
+        // === USER PROFILES ===
+        services.AddScoped<IUserProfiles, UserProfilesService>();
 
         // === REPORTS (Yeni) ===
         services.AddScoped<ReportService>();
@@ -53,8 +57,8 @@ public static class DependencyInjection
 
         // === Uygulama servisleri ===
         services.AddScoped<TokenService>();
-        services.AddScoped<ScanService>(); 
-        
+        services.AddScoped<ScanService>();
+
         return services;
     }
 }

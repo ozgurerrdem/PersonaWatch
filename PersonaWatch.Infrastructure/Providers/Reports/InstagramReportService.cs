@@ -21,7 +21,7 @@ public class InstagramReportService : IReports
 
     public async Task<ReportBundle> FetchAsync(UserProfile profile, ReportRequest request, CancellationToken ct = default)
     {
-        var username = profile.InstagramUsername?.Trim();
+        var username = profile.Username?.Trim();
         if (string.IsNullOrWhiteSpace(username))
         {
             return new ReportBundle { Platform = Platform };
