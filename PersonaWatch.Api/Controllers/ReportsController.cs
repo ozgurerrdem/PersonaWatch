@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using PersonaWatch.Application.Abstraction.Services;
-using PersonaWatch.Application.DTOs.Reports;
-using PersonaWatch.Domain.Entities;
+using PersonaWatch.Application.Abstraction;
 
 namespace PersonaWatch.Api.Controllers;
 
@@ -9,11 +7,12 @@ namespace PersonaWatch.Api.Controllers;
 [Route("api/[controller]")]
 public class ReportController : ControllerBase
 {
-    private readonly IEnumerable<IReports> _reports;
+    private readonly IEnumerable<IReport> _report;
 
     // Zaten varsa bu ctor’u tekrar eklemene gerek yok
-    public ReportController(IEnumerable<IReports> reports)
+    public ReportController(IEnumerable<IReport> report)
     {
-        _reports = reports;
+        _report = report;
     }
 }
+    

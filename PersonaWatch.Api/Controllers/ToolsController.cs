@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using PersonaWatch.Application.Abstraction.Media;
+using PersonaWatch.Application.Abstraction;
 
 namespace PersonaWatch.Api.Controllers;
 

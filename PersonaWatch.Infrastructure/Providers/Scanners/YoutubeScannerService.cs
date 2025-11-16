@@ -1,8 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using PersonaWatch.Application.Abstraction.Services;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.Common.Helpers;
-using PersonaWatch.Domain.Entities;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners;
 
@@ -19,9 +18,9 @@ public class YouTubeScannerService : IScanner
         _apiKey = configuration["YoutubeDataApiV3:ApiKey"] ?? throw new ArgumentNullException(Source + ":ApiKey is missing");
     }
 
-    public async Task<List<NewsContent>> ScanAsync(string searchKeyword)
+    public async Task<List<Domain.Entities.NewsContent>> ScanAsync(string searchKeyword)
     {
-        var results = new List<NewsContent>();
+        var results = new List<Domain.Entities.NewsContent>();
         var client = _httpClientFactory.CreateClient();
 
         var publishedAfter = DateTime.UtcNow.Date.AddDays(-7).ToString("yyyy-MM-dd") + "T00:00:00Z";
@@ -41,7 +40,7 @@ public class YouTubeScannerService : IScanner
             if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(videoId))
                 continue;
 
-            results.Add(new NewsContent
+            results.Add(new Domain.Entities.NewsContent
             {
                 Id = Guid.NewGuid(),
                 Title = title,

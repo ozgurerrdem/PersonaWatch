@@ -1,9 +1,9 @@
 using PersonaWatch.Application.DTOs.Reports;
 using PersonaWatch.Domain.Entities;
 
-namespace PersonaWatch.Application.Abstraction.Services;
+namespace PersonaWatch.Application.Abstraction;
 
-public interface IReports
+public interface IReporter
 {
     /// <summary>
     /// Tek bir platformu tarar ve bu platforma ait rapor öğelerini döner.

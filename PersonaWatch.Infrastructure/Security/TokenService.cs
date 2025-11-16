@@ -3,11 +3,12 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Domain.Entities;
 
 namespace PersonaWatch.Infrastructure.Security;
 
-public class TokenService
+public class TokenService : IToken
 {
     private readonly IConfiguration _configuration;
 

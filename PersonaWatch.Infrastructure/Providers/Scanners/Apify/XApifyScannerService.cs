@@ -1,8 +1,7 @@
 ﻿using System.Globalization;
-using PersonaWatch.Application.Abstraction.Services;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.Common.Helpers;
 using PersonaWatch.Application.DTOs.Providers.Apify;
-using PersonaWatch.Domain.Entities;
 using PersonaWatch.Infrastructure.Providers.Apify;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners.Apify;
@@ -18,7 +17,7 @@ public class XApifyScannerService : IScanner
         _apifyClient = apifyClient;
     }
 
-    public async Task<List<NewsContent>> ScanAsync(string searchKeyword)
+    public async Task<List<Domain.Entities.NewsContent>> ScanAsync(string searchKeyword)
     {
         var input = new
         {
@@ -40,12 +39,11 @@ public class XApifyScannerService : IScanner
         }
 
         if (status != "SUCCEEDED")
-            return new List<NewsContent>();
+            return new List<Domain.Entities.NewsContent>();
 
         var datasetId = await _apifyClient.GetDatasetIdAsync(runId);
         if (string.IsNullOrWhiteSpace(datasetId))
-            return new List<NewsContent>();
-
+            return new List<Domain.Entities.NewsContent>();
         var rawTweets = await _apifyClient.GetDatasetItemsAsync<XTweetsDto>(datasetId);
 
         var results = rawTweets
@@ -55,7 +53,7 @@ public class XApifyScannerService : IScanner
                 var url = t.Url ?? string.Empty;
                 var title = t.Text!.Length > 100 ? t.Text.Substring(0, 100) : t.Text;
 
-                return new NewsContent
+                return new Domain.Entities.NewsContent
                 {
                     Id = Guid.NewGuid(),
 

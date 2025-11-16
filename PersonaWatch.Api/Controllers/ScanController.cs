@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.DTOs.Scanning;
-using PersonaWatch.Application.Services;
 
 namespace PersonaWatch.Api.Controllers;
 
@@ -9,9 +9,9 @@ namespace PersonaWatch.Api.Controllers;
 [Route("api/[controller]")]
 public class ScanController : ControllerBase
 {
-    private readonly ScanService _scanService;
+    private readonly IScan _scanService;
 
-    public ScanController(ScanService scanService)
+    public ScanController(IScan scanService)
     {
         _scanService = scanService;
     }

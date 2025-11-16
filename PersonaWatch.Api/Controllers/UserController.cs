@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.DTOs;
 using PersonaWatch.Domain.Entities;
-using PersonaWatch.Infrastructure.Persistence;
-using PersonaWatch.Infrastructure.Security;
 
 namespace PersonaWatch.Api.Controllers;
 
@@ -12,20 +11,22 @@ namespace PersonaWatch.Api.Controllers;
 [Route("api/[controller]")]
 public class UserController : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly TokenService _tokenService;
+    private readonly IToken _tokenService;
+    private readonly IUser _userService;
+    private readonly IUserContext _userContext;
 
-    public UserController(AppDbContext context, TokenService tokenService)
+    public UserController(IToken tokenService, IUser userService, IUserContext userContext)
     {
-        _context = context;
         _tokenService = tokenService;
+        _userService = userService;
+        _userContext = userContext;
     }
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public IActionResult Login([FromBody] UserLoginDto dto)
+    public async Task<IActionResult> Login([FromBody] UserLoginDto dto)
     {
-        var user = _context.Users.Where(u => u.RecordStatus == 'A').FirstOrDefault(u => u.Username == dto.Username);
+        var user = await _userService.GetUserByUsernameAsync(dto.Username);
         if (user == null)
             return Unauthorized("Kullanıcı bulunamadı");
 
@@ -48,25 +49,12 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("all")]
-    public IActionResult GetAllUsers()
+    public async Task<IActionResult> GetAllUsers()
     {
         if (!IsCurrentUserAdmin())
             return Forbid();
 
-        var users = _context.Users
-            .Where(u => u.RecordStatus == 'A')
-            .Select(u => new
-            {
-                u.Id,
-                u.Username,
-                u.FirstName,
-                u.LastName,
-                u.IsAdmin
-            })
-            .OrderBy(u => u.Username)
-            .ThenBy(u => u.FirstName)
-            .ThenBy(u => u.LastName)
-            .ToList();
+        var users = await _userService.GetAllUsersAsync();
 
         return Ok(users);
     }
@@ -77,28 +65,14 @@ public class UserController : ControllerBase
         if (!IsCurrentUserAdmin())
             return Forbid();
 
-        var user = await _context.Users.FindAsync(id);
+        var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
             return NotFound();
 
-        if (user.Username.ToLower() == "admin")
+        if (user.Username == "admin" && _userContext.UserName != "admin")
             return BadRequest("Admin kullanıcısı güncellenemez.");
 
-        user.Username = dto.Username;
-        user.FirstName = dto.FirstName;
-        user.LastName = dto.LastName;
-        user.IsAdmin = dto.IsAdmin;
-
-        if (!string.IsNullOrWhiteSpace(dto.Password))
-        {
-            var hasher = new PasswordHasher<User>();
-            user.Password = hasher.HashPassword(user, dto.Password);
-        }
-
-        user.UpdatedUserName = Request.Headers["x-username"].ToString() ?? "system";
-        user.UpdatedDate = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
+        await _userService.UpdateUserAsync(user, dto);
         return Ok();
     }
 
@@ -111,48 +85,29 @@ public class UserController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.Password))
             return BadRequest("Şifre zorunludur.");
 
-        var exists = _context.Users.Where(u => u.RecordStatus == 'A').Any(u => u.Username == dto.Username);
+        var exists = await _userService.GetUserByUsernameAsync(dto.Username) != null;
         if (exists)
             return Conflict("Bu kullanıcı adı zaten var.");
 
-        var hasher = new PasswordHasher<User>();
-        var user = new User
-        {
-            Username = dto.Username,
-            FirstName = dto.FirstName,
-            LastName = dto.LastName,
-            IsAdmin = dto.IsAdmin,
-            Password = hasher.HashPassword(null!, dto.Password),
-            CreatedUserName = Request.Headers["x-username"].FirstOrDefault() ?? "system",
-            CreatedDate = DateTime.UtcNow,
-            UpdatedUserName = Request.Headers["x-username"].FirstOrDefault() ?? "system",
-            UpdatedDate = DateTime.UtcNow
-        };
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        await _userService.CreateUserAsync(dto);
 
         return Ok();
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> SoftDeleteUser(Guid id)
+    public async Task<IActionResult> DeleteUserAsync(Guid id)
     {
         if (!IsCurrentUserAdmin())
             return Forbid();
 
-        var user = await _context.Users.FindAsync(id);
+        var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
             return NotFound();
 
         if (user.Username.ToLower() == "admin")
             return BadRequest("Admin kullanıcısı silinemez.");
 
-        user.RecordStatus = 'P';
-        user.UpdatedUserName = Request.Headers["x-username"].FirstOrDefault() ?? "system";
-        user.UpdatedDate = DateTime.Now;
-
-        await _context.SaveChangesAsync();
+        await _userService.DeleteUserAsync(user);        
         return Ok();
     }
 

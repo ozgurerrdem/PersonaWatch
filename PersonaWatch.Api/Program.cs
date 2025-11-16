@@ -2,6 +2,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using PersonaWatch.Api.Extensions;
+using PersonaWatch.Api.Security;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Infrastructure;
 using PersonaWatch.Infrastructure.Persistence.Seed;
 
@@ -30,7 +32,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Opsiyonel: seed'i hosted service ile çalıştır
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, HttpUserContext>();
+
 builder.Services.AddHostedService<DatabaseSeederHostedService>();
 
 var app = builder.Build();

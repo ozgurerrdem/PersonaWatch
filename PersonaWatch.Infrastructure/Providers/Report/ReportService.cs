@@ -1,20 +1,17 @@
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using PersonaWatch.Application.Abstraction.Services;
-using PersonaWatch.Application.Common.Helpers;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.DTOs.Reports;
-using PersonaWatch.Domain.Entities;
 using PersonaWatch.Infrastructure.Persistence;
 
-namespace PersonaWatch.Infrastructure.Providers.Reports;
+namespace PersonaWatch.Infrastructure.Providers.Report;
 
-public class ReportService
+public class ReportService : IReport
 {
     private readonly AppDbContext _db;
-    private readonly IEnumerable<IReports> _reporters;
+    private readonly IEnumerable<IReporter> _reporters;
 
-    public ReportService(AppDbContext db, IEnumerable<IReports> reporters)
+    public ReportService(AppDbContext db, IEnumerable<IReporter> reporters)
     {
         _db = db;
         _reporters = reporters;

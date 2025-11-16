@@ -1,6 +1,6 @@
 using PersonaWatch.Application.DTOs.UserProfile;
 
-namespace PersonaWatch.Application.Abstraction.Services;
+namespace PersonaWatch.Application.Abstraction;
 
 public interface IUserProfiles
 {

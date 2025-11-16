@@ -1,9 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using PersonaWatch.Application.Abstraction.Services;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.Common.Helpers;
-using PersonaWatch.Domain.Entities;
  
 namespace PersonaWatch.Infrastructure.Providers.Scanners;
 
@@ -12,9 +11,9 @@ public class EksiScannerService : IScanner
     public string Source => "EkşiSelenium";
     private readonly string _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
-    public async Task<List<NewsContent>> ScanAsync(string searchKeyword)
+    public async Task<List<Domain.Entities.NewsContent>> ScanAsync(string searchKeyword)
     {
-        var results = new List<NewsContent>();
+        var results = new List<Domain.Entities.NewsContent>();
         if (string.IsNullOrWhiteSpace(searchKeyword))
             return results;
 
@@ -95,7 +94,7 @@ public class EksiScannerService : IScanner
                     var normalizedUrl = HelperService.NormalizeUrl(entryUrl);
                     var contentHash = HelperService.ComputeMd5(entryText + normalizedUrl);
 
-                    results.Add(new NewsContent
+                    results.Add(new Domain.Entities.NewsContent
                     {
                         Id = Guid.NewGuid(),
                         Title = author,

@@ -1,9 +1,11 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
-using PersonaWatch.Application.Abstraction.Services;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.Common.Helpers;
 using PersonaWatch.Application.DTOs.Providers.Filmot;
-using PersonaWatch.Domain.Entities;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners;
 
@@ -18,9 +20,9 @@ public class FilmotScannerService : IScanner
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<List<NewsContent>> ScanAsync(string searchKeyword)
+    public async Task<List<Domain.Entities.NewsContent>> ScanAsync(string searchKeyword)
     {
-        var results = new List<NewsContent>();
+        var results = new List<Domain.Entities.NewsContent>();
 
         if (string.IsNullOrWhiteSpace(searchKeyword))
             return results;
@@ -32,19 +34,24 @@ public class FilmotScannerService : IScanner
         var client = _httpClientFactory.CreateClient();
 
         string html;
+        var clientt = _httpClientFactory.CreateClient();
+
         try
         {
-            html = await client.GetStringAsync(url);
+            html = await clientt.GetStringAsync(url);
         }
         catch
         {
-            return results;
+            html = await GetHtmlWithSelenium(url);
         }
 
-        // Tüm video bilgilerini HTML'den çıkar
+        if (html.Contains("hcaptcha") || html.Contains("Verify You're Human"))
+        {
+            html = await GetHtmlWithSelenium(url);
+        }
+
         var videoInfos = ExtractAllVideoInfoFromHtml(html);
 
-        // JSON verilerini çıkar
         var jsonMatch = Regex.Match(html, @"window\.results\s*=\s*(\{.*?\});", RegexOptions.Singleline);
         Dictionary<string, FilmotVideoResult>? resultDict = null;
 
@@ -60,7 +67,7 @@ public class FilmotScannerService : IScanner
             }
             catch
             {
-                // JSON parse hatası durumunda devam et
+                
             }
         }
 
@@ -68,7 +75,6 @@ public class FilmotScannerService : IScanner
         {
             foreach (var video in resultDict.Values)
             {
-                // Bu video için HTML'den çıkarılan bilgileri bul
                 FilmotVideoInfo? videoInfo = null;
                 if (videoInfos.ContainsKey(video.Vid ?? string.Empty))
                 {
@@ -97,7 +103,7 @@ public class FilmotScannerService : IScanner
                     var viewCount = videoInfo?.ViewCount ?? 0;
                     var likeCount = videoInfo?.LikeCount ?? 0;
 
-                    results.Add(new NewsContent
+                    results.Add(new Domain.Entities.NewsContent
                     {
                         Id = Guid.NewGuid(),
                         Title = title,
@@ -126,7 +132,6 @@ public class FilmotScannerService : IScanner
     {
         var videoInfos = new Dictionary<string, FilmotVideoInfo>();
 
-        // Video kartlarını bulma pattern'i geliştirildi
         var videoCardPattern = @"<div id=""vcard\d+""[^>]*>.*?" +
                               @"<a href=""https://www\.youtube\.com/watch\?v=([^""]+)&t=\d+s""[^>]*>.*?" +
                               @"<div class=""d-inline""[^>]*data-toggle=""tooltip"" title=""([^""]*)"".*?" +
@@ -152,7 +157,6 @@ public class FilmotScannerService : IScanner
                     LikeCount = ParseCount(match.Groups[7].Value)
                 };
 
-                // Tarihi parse et
                 var dateString = match.Groups[8].Value.Trim();
                 try
                 {
@@ -172,7 +176,6 @@ public class FilmotScannerService : IScanner
 
     private DateTime ParseFilmotDate(string dateString)
     {
-        // Filmot tarih formatı: "30 Sep 2025"
         var months = new Dictionary<string, int>
         {
             {"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4}, {"May", 5}, {"Jun", 6},
@@ -198,7 +201,6 @@ public class FilmotScannerService : IScanner
         if (string.IsNullOrEmpty(countString))
             return 0;
 
-        // "2.5K", "1.6K", "34.2K" gibi formatları parse et
         countString = countString.Trim().ToUpper();
 
         if (countString.Contains("K"))
@@ -210,12 +212,38 @@ public class FilmotScannerService : IScanner
             }
         }
 
-        // Sayısal değer
         if (long.TryParse(countString, out long result))
         {
             return result;
         }
 
         return 0;
+    }
+
+    private async Task<string> GetHtmlWithSelenium(string url)
+    {
+        var options = new ChromeOptions();
+        options.AddArgument("--disable-blink-features=AutomationControlled");
+        options.AddExcludedArgument("enable-automation");
+        options.AddAdditionalOption("useAutomationExtension", false);
+
+        using (var driver = new ChromeDriver(options))
+        {
+            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+            js.ExecuteScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
+
+            try
+            {
+                driver.Navigate().GoToUrl(url);
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                wait.Until(d => d.FindElement(By.CssSelector(".h-captcha")));
+                wait.Until(d => !d.Url.Contains("captcha"));
+                return driver.PageSource;
+            }
+            finally
+            {
+                driver.Quit();
+            }
+        }
     }
 }

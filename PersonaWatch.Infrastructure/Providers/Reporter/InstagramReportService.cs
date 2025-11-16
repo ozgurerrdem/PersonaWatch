@@ -1,12 +1,12 @@
 using System.Text.Json;
-using PersonaWatch.Application.Abstraction.Services;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.DTOs.Reports;
 using PersonaWatch.Domain.Entities;
 using PersonaWatch.Infrastructure.Providers.Apify;
+    
+namespace PersonaWatch.Infrastructure.Providers.Reporter;
 
-namespace PersonaWatch.Infrastructure.Providers.Reports;
-
-public class InstagramReportService : IReports
+public class InstagramReportService : IReporter
 {
     public string Platform => "instagram";
 

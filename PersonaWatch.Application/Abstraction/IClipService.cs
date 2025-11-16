@@ -1,4 +1,4 @@
-namespace PersonaWatch.Application.Abstraction.Media;
+namespace PersonaWatch.Application.Abstraction;
 
 public interface IClipService
 {

@@ -1,26 +1,27 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using PersonaWatch.Application.Abstraction.Services;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.DTOs.Scanning;
-using PersonaWatch.Domain.Entities;
 using PersonaWatch.Infrastructure.Persistence;
 
-namespace PersonaWatch.Application.Services;
+namespace PersonaWatch.Infrastructure.Providers.Scan;
 
-public class ScanService
+public class ScanService : IScan
 {
     private readonly AppDbContext _context;
     private readonly IEnumerable<IScanner> _scanners;
+    private readonly IUserContext _userContext;
 
-    public ScanService(AppDbContext context, IEnumerable<IScanner> scanners)
+    public ScanService(AppDbContext context, IEnumerable<IScanner> scanners, IUserContext userContext)
     {
         _context = context;
         _scanners = scanners;
+        _userContext = userContext;
     }
 
     public async Task<ScannerResponseDto> ScanAsync(ScannerRequestDto request)
     {
-        var allNewContents = new List<NewsContent>();
+        var allNewContents = new List<Domain.Entities.NewsContent>();
         var exceptions = new List<ScannerExceptions>();
 
         var existingHashes = new HashSet<string>(
@@ -41,6 +42,8 @@ public class ScanService
                     if (!existingHashes.Contains(item.ContentHash))
                     {
                         existingHashes.Add(item.ContentHash);
+                        item.UpdatedUserName = _userContext.UserName ?? "system";
+                        item.CreatedUserName = _userContext.UserName ?? "system";
                         allNewContents.Add(item);
                     }
                 }

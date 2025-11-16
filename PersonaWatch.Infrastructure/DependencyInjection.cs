@@ -1,15 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PersonaWatch.Application.Abstraction.Media;
-using PersonaWatch.Application.Abstraction.Services;
-using PersonaWatch.Application.Services;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Infrastructure.Persistence;
 using PersonaWatch.Infrastructure.Providers.Apify;
 using PersonaWatch.Infrastructure.Providers.Media;
-using PersonaWatch.Infrastructure.Providers.Reports;
+using PersonaWatch.Infrastructure.Providers.NewsContent;
+using PersonaWatch.Infrastructure.Providers.Report;
+using PersonaWatch.Infrastructure.Providers.Reporter;
+using PersonaWatch.Infrastructure.Providers.Scan;
 using PersonaWatch.Infrastructure.Providers.Scanners;
 using PersonaWatch.Infrastructure.Providers.Scanners.Apify;
+using PersonaWatch.Infrastructure.Providers.User;
 using PersonaWatch.Infrastructure.Providers.UserProfiles;
 using PersonaWatch.Infrastructure.Security;
 
@@ -32,32 +34,40 @@ public static class DependencyInjection
         services.AddHttpClient<ApifyClient>();
         services.AddHttpClient<EksiScannerService>();
 
-        // === USER PROFILES ===
-        services.AddScoped<IUserProfiles, UserProfilesService>();
+        // === Token ===
+        services.AddScoped<IToken, TokenService>();
 
-        // === REPORTS (Yeni) ===
-        services.AddScoped<ReportService>();
-        services.AddScoped<IReports, InstagramReportService>();
+        // === User ===
+        services.AddScoped<IUser, UserService>();
 
-        // === IClip implementasyonu ===
-        services.AddScoped<IClipService, ClipService>();
+        // === NewsContent ===
+        services.AddScoped<INewsContent, NewsContentService>();
 
-        // === IScanner implementasyonları ===
+        // === Scan ===
+        services.AddScoped<IScan, ScanService>();
+
+        // === Scanner ===
         services.AddScoped<IScanner, SerpApiScannerService>();
         services.AddScoped<IScanner, YouTubeScannerService>();
         services.AddScoped<IScanner, FilmotScannerService>();
         services.AddScoped<IScanner, EksiScannerService>();
         services.AddScoped<IScanner, SikayetvarScannerService>();
-
-        // === Apify tabanlı scanner’lar ===
         services.AddScoped<IScanner, XApifyScannerService>();
         services.AddScoped<IScanner, InstagramApifyScannerService>();
         services.AddScoped<IScanner, FacebookApifyScannerService>();
         services.AddScoped<IScanner, TiktokApifyScannerService>();
 
-        // === Uygulama servisleri ===
-        services.AddScoped<TokenService>();
-        services.AddScoped<ScanService>();
+        // === Clip ===
+        services.AddScoped<IClipService, ClipService>();
+
+        // === UserProfiles ===
+        services.AddScoped<IUserProfiles, UserProfilesService>();
+        
+        // === Reporter ===
+        services.AddScoped<IReport, ReportService>();
+
+        // === Reporter ===
+        services.AddScoped<IReporter, InstagramReportService>();
 
         return services;
     }

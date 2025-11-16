@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using PersonaWatch.Application.Abstraction.Services;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.DTOs.UserProfile;
 
 namespace PersonaWatch.Api.Controllers;
@@ -8,26 +8,18 @@ namespace PersonaWatch.Api.Controllers;
 [Route("api/[controller]")]
 public class UserProfilesController : ControllerBase
 {
-    private readonly IEnumerable<IUserProfiles> _userProfiles;
+    private readonly IUserProfiles _userProfileService;
 
-    public UserProfilesController(IEnumerable<IUserProfiles> userProfiles)
+    public UserProfilesController(IUserProfiles userProfileService)
     {
-        _userProfiles = userProfiles;
+        _userProfileService = userProfileService;
     }
 
     // GET: api/userprofiles
     [HttpGet]
     public async Task<ActionResult<List<UserProfileDto>>> GetAllProfiles()
     {
-        var profiles = new List<UserProfileDto>();
-
-        foreach (var service in _userProfiles)
-        {
-            var result = await service.GetAllProfilesAsync();
-            if (result is not null)
-                profiles.AddRange(result);
-        }
-
+        var profiles = await _userProfileService.GetAllProfilesAsync();
         return Ok(profiles);
     }
 
@@ -39,10 +31,7 @@ public class UserProfilesController : ControllerBase
         if (dto is null || string.IsNullOrWhiteSpace(dto.PersonName))
             return BadRequest("PersonName is required.");
 
-        foreach (var service in _userProfiles)
-        {
-            await service.UpsertProfileAsync(dto);
-        }
+        await _userProfileService.UpsertProfileAsync(dto);
 
         return Ok();
     }

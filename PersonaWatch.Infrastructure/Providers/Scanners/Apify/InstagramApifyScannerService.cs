@@ -1,7 +1,6 @@
-﻿using PersonaWatch.Application.Abstraction.Services;
+﻿using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.Common.Helpers;
 using PersonaWatch.Application.DTOs.Providers.Apify;
-using PersonaWatch.Domain.Entities;
 using PersonaWatch.Infrastructure.Providers.Apify;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners.Apify;
@@ -16,9 +15,9 @@ public class InstagramApifyScannerService : IScanner
         _apifyClient = apifyClient;
     }
 
-    public async Task<List<NewsContent>> ScanAsync(string searchKeyword)
+    public async Task<List<Domain.Entities.NewsContent>> ScanAsync(string searchKeyword)
     {
-        var results = new List<NewsContent>();
+        var results = new List<Domain.Entities.NewsContent>();
         var actorId = "reGe1ST3OBgYZSsZJ";
         var requestTypes = new[] { "posts", "stories" };
 
@@ -61,7 +60,7 @@ public class InstagramApifyScannerService : IScanner
 
                         var url = p.Url ?? string.Empty;
 
-                        return new NewsContent
+                        return new Domain.Entities.NewsContent
                         {
                             Id = Guid.NewGuid(),
 

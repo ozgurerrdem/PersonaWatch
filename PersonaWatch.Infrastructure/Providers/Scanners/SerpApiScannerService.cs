@@ -1,8 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using PersonaWatch.Application.Abstraction.Services;
+using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.Common.Helpers;
-using PersonaWatch.Domain.Entities;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners;
 
@@ -19,7 +18,7 @@ public class SerpApiScannerService : IScanner
         _serpApiKey = configuration["SerpApi:ApiKey"] ?? throw new ArgumentNullException("SerpApi:ApiKey is missing");
     }
 
-    public async Task<List<NewsContent>> ScanAsync(string searchKeyword)
+    public async Task<List<Domain.Entities.NewsContent>> ScanAsync(string searchKeyword)
     {
         var engines = new[] { "google", "google_news", "google_videos" };
 
@@ -32,9 +31,9 @@ public class SerpApiScannerService : IScanner
         return allResults;
     }
 
-    private async Task<List<NewsContent>> ScanEngineAsync(string engine, string searchKeyword)
+    private async Task<List<Domain.Entities.NewsContent>> ScanEngineAsync(string engine, string searchKeyword)
     {
-        var results = new List<NewsContent>();
+        var results = new List<Domain.Entities.NewsContent>();
         var client = _httpClientFactory.CreateClient();
 
         var quotedQuery = $"\"{searchKeyword}\"";
@@ -110,7 +109,7 @@ public class SerpApiScannerService : IScanner
                 var normalizedUrl = HelperService.NormalizeUrl(url ?? string.Empty);
                 var contentHash = HelperService.ComputeMd5((title ?? string.Empty).Trim() + normalizedUrl);
 
-                results.Add(new NewsContent
+                results.Add(new Domain.Entities.NewsContent
                 {
                     Id = Guid.NewGuid(),
                     Title = title ?? string.Empty,

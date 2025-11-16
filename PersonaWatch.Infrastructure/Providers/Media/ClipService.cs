@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using PersonaWatch.Application.Abstraction.Media;
+using PersonaWatch.Application.Abstraction;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;

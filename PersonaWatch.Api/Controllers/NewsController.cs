@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PersonaWatch.Infrastructure.Persistence;
+using PersonaWatch.Application.Abstraction;
 
 namespace PersonaWatch.Api.Controllers;
 
@@ -8,11 +7,10 @@ namespace PersonaWatch.Api.Controllers;
 [Route("api/[controller]")]
 public class NewsController : ControllerBase
 {
-    private readonly AppDbContext _context;
-
-    public NewsController(AppDbContext context)
+    private readonly INewsContent _newsContentService;
+    public NewsController(INewsContent newsContentService)
     {
-        _context = context;
+        _newsContentService = newsContentService;
     }
 
     [HttpGet]
@@ -21,21 +19,15 @@ public class NewsController : ControllerBase
         [FromQuery] DateTime? dateFrom,
         [FromQuery] DateTime? dateTo)
     {
-        var query = _context.NewsContents
-            .AsNoTracking()
-            .Where(n => n.RecordStatus == 'A');
+        var query = await _newsContentService.GetAllNewsContents();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            // Aranan anahtar kelime tam eşleşme (mevcut davranışı korudum)
             query = query.Where(n => n.SearchKeyword == search);
-            // İçerikte aramak istersen:
-            // query = query.Where(n => n.SearchKeyword == search || n.Title.Contains(search) || n.Summary.Contains(search));
         }
 
         if (dateFrom.HasValue)
         {
-            // UI UTC başlangıç gönderiyor ⇒ .Date kullanmadan doğrudan karşılaştır
             query = query.Where(n => n.PublishDate >= dateFrom.Value);
         }
 
@@ -44,7 +36,7 @@ public class NewsController : ControllerBase
             query = query.Where(n => n.PublishDate <= dateTo.Value);
         }
 
-        var newsList = await query
+        var newsList = query
             .OrderByDescending(n => n.PublishDate)
             .Select(n => new
             {
@@ -63,8 +55,7 @@ public class NewsController : ControllerBase
                 dislikeCount = n.DislikeCount,
                 viewCount = n.ViewCount,
                 commentCount = n.CommentCount
-            })
-            .ToListAsync();
+            });
 
         return Ok(newsList);
     }
@@ -75,13 +66,7 @@ public class NewsController : ControllerBase
     {
         try
         {
-            var keywords = await _context.NewsContents
-                                        .AsNoTracking()
-                                        .Where(n => n.RecordStatus == 'A')
-                                        .Select(n => n.SearchKeyword)
-                                        .Distinct()
-                                        .OrderBy(k => k)
-                                        .ToListAsync();
+            var keywords = await _newsContentService.GetAllSearchKeywords();
 
             if (keywords == null || !keywords.Any())
                 return NotFound("No search keywords available.");
