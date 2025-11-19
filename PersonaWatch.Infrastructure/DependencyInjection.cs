@@ -71,6 +71,7 @@ public static class DependencyInjection
 
         // === Reporter ===
         services.AddScoped<IReporter, InstagramReporterService>();
+        services.AddScoped<IReporter, XReporterService>();
 
         return services;
     }
