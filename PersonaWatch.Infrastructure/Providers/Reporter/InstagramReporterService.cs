@@ -6,15 +6,15 @@ using PersonaWatch.Infrastructure.Providers.Apify;
     
 namespace PersonaWatch.Infrastructure.Providers.Reporter;
 
-public class InstagramReportService : IReporter
+public class InstagramReporterService : IReporter
 {
-    public string Platform => "instagram";
+    public string Platform => "Instagram";
 
     private readonly ApifyClient _apify;
 
     private const string ACTOR_ID = "nH2AHrwxeTRJoN5hX";
 
-    public InstagramReportService(ApifyClient apify)
+    public InstagramReporterService(ApifyClient apify)
     {
         _apify = apify;
     }
@@ -27,7 +27,6 @@ public class InstagramReportService : IReporter
             return new ReportBundle { Platform = Platform };
         }
 
-        // --- Aktör input ---
         var input = new
         {
             onlyPostsNewerThan = request.FromUtc.ToString("yyyy-MM-dd"),
@@ -36,12 +35,10 @@ public class InstagramReportService : IReporter
             username = new[] { username }
         };
 
-        // --- Aktörü çalıştır ve dataset al ---
         var runId = await _apify.StartActorRawAsync(ACTOR_ID, input);
         string? datasetId = null;
         int tries = 0;
 
-        // run tamamlanana kadar poll et (max 30 sn)
         while (datasetId == null && tries < 15)
         {
             await Task.Delay(2000, ct);
@@ -54,7 +51,14 @@ public class InstagramReportService : IReporter
             return new ReportBundle { Platform = Platform };
         }
 
-        var items = await _apify.GetDatasetItemsAsync<JsonElement>(datasetId);
+        tries = 0;
+        var items = new List<JsonElement>();
+        while (items.Count < request.MaxItemsPerPlatform && tries < request.MaxItemsPerPlatform * 2 && tries < 30)
+        {
+            await Task.Delay(2000, ct);
+            items = await _apify.GetDatasetItemsAsync<JsonElement>(datasetId);
+            tries++;
+        }
 
         var bundle = new ReportBundle { Platform = Platform };
         foreach (var item in items)

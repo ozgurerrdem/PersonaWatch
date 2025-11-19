@@ -34,7 +34,6 @@ public static class DependencyInjection
         services.AddHttpClient();
         services.AddHttpClient<ApifyClient>();
         services.AddHttpClient<EksiScannerService>();
-        services.AddScoped<FilmotRapidApiScannerService>();
 
         // === Token ===
         services.AddScoped<IToken, TokenService>();
@@ -53,6 +52,7 @@ public static class DependencyInjection
         services.AddScoped<IScanner, YouTubeScannerService>();
         services.AddScoped<IScanner, FilmotScannerService>();
         services.AddScoped<IScanner, FilmotRapidApiScannerService>();
+        services.AddScoped<FilmotRapidApiScannerService>();
         services.AddScoped<IScanner, EksiScannerService>();
         services.AddScoped<IScanner, SikayetvarScannerService>();
         services.AddScoped<IScanner, XApifyScannerService>();
@@ -66,11 +66,11 @@ public static class DependencyInjection
         // === UserProfiles ===
         services.AddScoped<IUserProfiles, UserProfilesService>();
         
-        // === Reporter ===
+        // === Report ===
         services.AddScoped<IReport, ReportService>();
 
         // === Reporter ===
-        services.AddScoped<IReporter, InstagramReportService>();
+        services.AddScoped<IReporter, InstagramReporterService>();
 
         return services;
     }
