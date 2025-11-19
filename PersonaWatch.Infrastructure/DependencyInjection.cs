@@ -73,6 +73,7 @@ public static class DependencyInjection
         services.AddScoped<IReporter, InstagramReporterService>();
         services.AddScoped<IReporter, XReporterService>();
         services.AddScoped<IReporter, TiktokReporterService>();
+        services.AddScoped<IReporter, FacebookReporterService>();
 
         return services;
     }
