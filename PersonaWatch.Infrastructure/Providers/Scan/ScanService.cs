@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.DTOs.Scanning;
 using PersonaWatch.Infrastructure.Persistence;
+using PersonaWatch.Infrastructure.Providers.Scanners;
+using PersonaWatch.Infrastructure.Providers.Scanners.RapidApi;
 
 namespace PersonaWatch.Infrastructure.Providers.Scan;
 
@@ -11,12 +13,14 @@ public class ScanService : IScan
     private readonly AppDbContext _context;
     private readonly IEnumerable<IScanner> _scanners;
     private readonly IUserContext _userContext;
+    private readonly FilmotRapidApiScannerService _filmotRapidApiScannerService;
 
-    public ScanService(AppDbContext context, IEnumerable<IScanner> scanners, IUserContext userContext)
+    public ScanService(AppDbContext context, IEnumerable<IScanner> scanners, IUserContext userContext, FilmotRapidApiScannerService filmotRapidApiScannerService)
     {
         _context = context;
         _scanners = scanners;
         _userContext = userContext;
+        _filmotRapidApiScannerService = filmotRapidApiScannerService;
     }
 
     public async Task<ScannerResponseDto> ScanAsync(ScannerRequestDto request)
@@ -35,7 +39,14 @@ public class ScanService : IScan
         {
             try
             {
-                var contents = await scanner.ScanAsync(request.SearchKeyword ?? string.Empty);
+                var contents = new List<Domain.Entities.NewsContent>();
+
+                if(scanner is FilmotScannerService && _scanners.Any(s => s is FilmotRapidApiScannerService))
+                {                    
+                    contents = await _filmotRapidApiScannerService.ScanAsync(request.SearchKeyword ?? string.Empty);
+                }
+
+                if(contents.Count == 0) contents = await scanner.ScanAsync(request.SearchKeyword ?? string.Empty);
 
                 foreach (var item in contents)
                 {
@@ -76,7 +87,7 @@ public class ScanService : IScan
         var interfaceType = typeof(IScanner);
         return Assembly.GetExecutingAssembly()
                         .GetTypes()
-                        .Where(t => interfaceType.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)
+                        .Where(t => interfaceType.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract && t.Name != nameof(FilmotRapidApiScannerService))
                         .Select(t => t.Name)
                         .ToList();
     }

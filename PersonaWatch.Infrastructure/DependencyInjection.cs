@@ -11,6 +11,7 @@ using PersonaWatch.Infrastructure.Providers.Reporter;
 using PersonaWatch.Infrastructure.Providers.Scan;
 using PersonaWatch.Infrastructure.Providers.Scanners;
 using PersonaWatch.Infrastructure.Providers.Scanners.Apify;
+using PersonaWatch.Infrastructure.Providers.Scanners.RapidApi;
 using PersonaWatch.Infrastructure.Providers.User;
 using PersonaWatch.Infrastructure.Providers.UserProfiles;
 using PersonaWatch.Infrastructure.Security;
@@ -33,6 +34,7 @@ public static class DependencyInjection
         services.AddHttpClient();
         services.AddHttpClient<ApifyClient>();
         services.AddHttpClient<EksiScannerService>();
+        services.AddScoped<FilmotRapidApiScannerService>();
 
         // === Token ===
         services.AddScoped<IToken, TokenService>();
@@ -50,6 +52,7 @@ public static class DependencyInjection
         services.AddScoped<IScanner, SerpApiScannerService>();
         services.AddScoped<IScanner, YouTubeScannerService>();
         services.AddScoped<IScanner, FilmotScannerService>();
+        services.AddScoped<IScanner, FilmotRapidApiScannerService>();
         services.AddScoped<IScanner, EksiScannerService>();
         services.AddScoped<IScanner, SikayetvarScannerService>();
         services.AddScoped<IScanner, XApifyScannerService>();
