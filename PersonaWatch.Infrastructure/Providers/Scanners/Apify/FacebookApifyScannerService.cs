@@ -3,13 +3,14 @@ using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.Common.Helpers;
 using PersonaWatch.Application.DTOs.Providers.Apify;
 using PersonaWatch.Infrastructure.Providers.Apify;
+using PersonaWatch.Infrastructure.Providers.Reporter;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners.Apify;
 
 public class FacebookApifyScannerService : IScanner
 {
     private readonly ApifyClient _apifyClient;
-    public string Source => "FacebookApify";
+    public string Source => Platforms.Facebook.ToString();
 
     public FacebookApifyScannerService(ApifyClient apifyClient)
     {

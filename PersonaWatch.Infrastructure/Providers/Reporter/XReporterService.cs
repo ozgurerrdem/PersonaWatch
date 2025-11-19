@@ -10,7 +10,7 @@ namespace PersonaWatch.Infrastructure.Providers.Reporter;
 
 public class XReporterService : IReporter
 {
-    public string Platform => "X";
+    public string Platform => Platforms.X.ToString();
 
     private readonly ApifyClient _apify;
 

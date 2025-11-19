@@ -8,7 +8,7 @@ namespace PersonaWatch.Infrastructure.Providers.Reporter;
 
 public class InstagramReporterService : IReporter
 {
-    public string Platform => "Instagram";
+    public string Platform => Platforms.Instagram.ToString();
 
     private readonly ApifyClient _apify;
 

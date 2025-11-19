@@ -8,7 +8,7 @@ namespace PersonaWatch.Infrastructure.Providers.Reporter;
 
 public class TiktokReporterService : IReporter
 {
-    public string Platform => "TikTok";
+    public string Platform => Platforms.Tiktok.ToString();
 
     private readonly ApifyClient _apify;
 

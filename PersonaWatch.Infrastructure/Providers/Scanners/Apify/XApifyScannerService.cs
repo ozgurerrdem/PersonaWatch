@@ -3,6 +3,7 @@ using PersonaWatch.Application.Abstraction;
 using PersonaWatch.Application.Common.Helpers;
 using PersonaWatch.Application.DTOs.Providers.Apify;
 using PersonaWatch.Infrastructure.Providers.Apify;
+using PersonaWatch.Infrastructure.Providers.Reporter;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners.Apify;
 
@@ -10,7 +11,7 @@ public class XApifyScannerService : IScanner
 {
     private readonly ApifyClient _apifyClient;
 
-    public string Source => "XApify";
+    public string Source => Platforms.X.ToString();
 
     public XApifyScannerService(ApifyClient apifyClient)
     {

@@ -2,13 +2,14 @@
 using PersonaWatch.Application.Common.Helpers;
 using PersonaWatch.Application.DTOs.Providers.Apify;
 using PersonaWatch.Infrastructure.Providers.Apify;
+using PersonaWatch.Infrastructure.Providers.Reporter;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners.Apify;
 
 public class InstagramApifyScannerService : IScanner
 {
     private readonly ApifyClient _apifyClient;
-    public string Source => "InstagramApify";
+    public string Source => Platforms.Instagram.ToString();
 
     public InstagramApifyScannerService(ApifyClient apifyClient)
     {

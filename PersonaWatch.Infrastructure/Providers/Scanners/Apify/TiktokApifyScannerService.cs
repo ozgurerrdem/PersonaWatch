@@ -2,13 +2,14 @@
 using PersonaWatch.Application.Common.Helpers;
 using PersonaWatch.Application.DTOs.Providers.Apify;
 using PersonaWatch.Infrastructure.Providers.Apify;
+using PersonaWatch.Infrastructure.Providers.Reporter;
 
 namespace PersonaWatch.Infrastructure.Providers.Scanners.Apify;
 
 public class TiktokApifyScannerService : IScanner
 {
     private readonly ApifyClient _apifyClient;
-    public string Source => "TiktokApify";
+    public string Source => Platforms.Tiktok.ToString();
 
     public TiktokApifyScannerService(ApifyClient apifyClient)
     {
